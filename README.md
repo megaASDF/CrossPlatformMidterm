@@ -1,16 +1,4 @@
 
-## 📋 Table of Contents
-
-- [Project Overview](#project-overview)
-- [System Requirements](#system-requirements)
-- [Installation & Setup](#installation--setup)
-- [Running the Application](#running-the-application)
-- [Features & State Management Demonstrations](#features--state-management-demonstrations)
-- [Testing Guide](#testing-guide)
-- [Project Structure](#project-structure)
-- [State Management Analysis](#state-management-analysis)
-- [Troubleshooting](#troubleshooting)
-
 ##  System Requirements
 
 ### Required
