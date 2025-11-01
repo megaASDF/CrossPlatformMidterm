@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/expense.dart';
 import '../providers/expense_provider.dart';
+import '../providers/theme_provider.dart';
 import '../widgets/expense_list.dart';
 import '../widgets/add_expense_fab.dart';
 import '../widgets/expense_summary.dart';
@@ -48,6 +49,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         title: const Text('Expense Tracker'),
         backgroundColor: cs.inversePrimary,
         actions: [
+          // Theme Toggle Button
+          Consumer(
+            builder: (context, ref, _) {
+              final themeAsync = ref.watch(themeNotifierProvider);
+              return themeAsync.maybeWhen(
+                data: (themeMode) => IconButton(
+                  icon: Icon(
+                    themeMode == ThemeMode.dark 
+                      ? Icons.light_mode 
+                      : Icons.dark_mode,
+                  ),
+                  tooltip: themeMode == ThemeMode.dark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+                  onPressed: () {
+                    ref.read(themeNotifierProvider.notifier).toggleTheme();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          themeMode == ThemeMode.dark 
+                            ? 'Switched to Light Mode' 
+                            : 'Switched to Dark Mode'
+                        ),
+                        duration: const Duration(seconds: 1),
+                      ),
+                    );
+                  },
+                ),
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(12.0),
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+                orElse: () => const SizedBox.shrink(),
+              );
+            },
+          ),
           // Seed test data
           IconButton(
             tooltip: 'Seed test data',
@@ -136,8 +175,62 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
             ),
           ],
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Error: $error')),
+        loading: () => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(
+                'Loading expenses...',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ),
+        error: (error, stack) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: Colors.red[300],
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Error Loading Expenses',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  error.toString(),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    ref.invalidate(expenseNotifierProvider);
+                  },
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
       floatingActionButton: AddExpenseFab(
         onCreated: (isPaid) {
